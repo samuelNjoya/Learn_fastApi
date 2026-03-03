@@ -4,52 +4,21 @@ from typing import List
 
 app = FastAPI(
     title="API Gestion Produits",
-    description="API professionnelle pour gérer un catalogue de produits",
     version="1.0.0"
 )
 
-# ==========================
-# SCHEMAS (Pydantic)
-# ==========================
-
-class ProductBase(BaseModel):
+class Product(BaseModel):
     name: str = Field(..., example="Smartphone")
     description: str = Field(..., example="Téléphone haute performance")
-    price: float = Field(..., gt=0, example=499.99)
-    stock: int = Field(..., ge=0, example=10)
-
-
-class ProductCreate(ProductBase):
-    pass
-
-
-class ProductResponse(ProductBase):
-    id: int
-
-    class Config:
-        from_attributes = True
-
-
-# ==========================
-# FAKE DATABASE (liste mémoire)
-# ==========================
+    price: float = Field(..., gt=0)
+    stock: int = Field(..., ge=0)
 
 products_db = []
 product_id_counter = 1
 
 
-# ==========================
-# ROUTES
-# ==========================
-
-@app.post(
-    "/products",
-    response_model=ProductResponse,
-    status_code=status.HTTP_201_CREATED,
-    tags=["Produits"],
-    summary="Créer un produit"
-)
-def create_product(product: ProductCreate):
+@app.post("/products", status_code=status.HTTP_201_CREATED)
+def create_product(product: Product):
     global product_id_counter
 
     new_product = {
@@ -63,46 +32,35 @@ def create_product(product: ProductCreate):
     return new_product
 
 
-@app.get(
-    "/products",
-    response_model=List[ProductResponse],
-    tags=["Produits"],
-    summary="Lister tous les produits"
-)
+@app.get("/products")
 def get_products():
     return products_db
 
 
-@app.get(
-    "/products/{product_id}",
-    response_model=ProductResponse,
-    tags=["Produits"],
-    summary="Obtenir un produit par ID"
-)
+@app.get("/products/{product_id}")
 def get_product(product_id: int):
     for product in products_db:
         if product["id"] == product_id:
             return product
 
-    raise HTTPException(
-        status_code=404,
-        detail="Produit non trouvé"
-    )
+    raise HTTPException(status_code=404, detail="Produit non trouvé")
 
 
-@app.delete(
-    "/products/{product_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-    tags=["Produits"],
-    summary="Supprimer un produit"
-)
+@app.put("/products/{product_id}")
+def update_product(product_id: int, updated_product: Product):
+    for product in products_db:
+        if product["id"] == product_id:
+            product.update(updated_product.model_dump())
+            return product
+
+    raise HTTPException(status_code=404, detail="Produit non trouvé")
+
+
+@app.delete("/products/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_product(product_id: int):
     for product in products_db:
         if product["id"] == product_id:
             products_db.remove(product)
             return
 
-    raise HTTPException(
-        status_code=404,
-        detail="Produit non trouvé"
-    )
+    raise HTTPException(status_code=404, detail="Produit non trouvé")
