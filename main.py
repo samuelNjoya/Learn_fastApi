@@ -16,6 +16,9 @@ class Product(BaseModel):
 products_db = []
 product_id_counter = 1
 
+@app.get("/")
+def read_root():
+    return {"message": "Hello World"}
 
 @app.post("/products", status_code=status.HTTP_201_CREATED)
 def create_product(product: Product):

@@ -1,6 +1,9 @@
 # pip install fastapi
 pip install -r requirements.txt
 # pip install uvicorn
+# pip3 install jinja2   from fastapi.templating import Jinja2Templates
+# pip3 install aiofiles pour le css
+# pip install sqlalchemy for bd
 utiliser pour lancer le serveur
 uvicorn run:app --reload(pour lancer automatiquement quand le serveur est pret)
 
