@@ -18,7 +18,7 @@ product_id_counter = 1
 
 @app.get("/")
 def read_root():
-    return {"message": "Hello World"}
+    return {"message": "Hello World this is my first API with FastAPI"}
 
 @app.post("/products", status_code=status.HTTP_201_CREATED)
 def create_product(product: Product):
