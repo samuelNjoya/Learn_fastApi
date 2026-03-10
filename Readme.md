@@ -33,3 +33,5 @@ app = FastAPI(docs_url=None, redoc_url=None)
 desactiver en production
 
 auth 3H36 posgress sql root
+
+uvicorn main:app --reload

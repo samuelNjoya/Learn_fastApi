@@ -1,19 +1,18 @@
 from fastapi import FastAPI, HTTPException, status
-from pydantic import BaseModel, Field
+from database import SessionLocal, engine
 from typing import List
+from models import Product
+import db_models
 
-app = FastAPI(
-    title="API Gestion Produits",
-    version="1.0.0"
-)
+app = FastAPI(title="API Gestion Produits", version="1.0.0")
 
-class Product(BaseModel):
-    name: str = Field(..., example="Smartphone")
-    description: str = Field(..., example="Téléphone haute performance")
-    price: float = Field(..., gt=0)
-    stock: int = Field(..., ge=0)
+db_models.Base.metadata.create_all(bind=engine)  # Crée les tables dans la DB
 
-products_db = []
+products_db = [
+      Product(name="Smartphone", description="Téléphone haute performance", price=699.99, stock=50),
+      Product(name="Laptop", description="Ordinateur portable puissant", price=1299.99, stock=30),
+      Product(name="Headphones", description="Casque audio de qualité", price=199.99, stock=100),
+]
 product_id_counter = 1
 
 @app.get("/")
@@ -34,9 +33,28 @@ def create_product(product: Product):
 
     return new_product
 
+def init_db():
+    db = SessionLocal()
+    count = db.query(db_models.Product).count()
+    if count == 0:
+        for product in products_db:
+            # db_product = db_models.Product(
+            #     name=product.name,
+            #     description=product.description,
+            #     price=product.price,
+            #     stock=product.stock
+            # )
+            db_product = db_models.Product(**product.model_dump())
+            db.add(db_product)
+ 
+        db.commit()
+
+init_db()
 
 @app.get("/products")
 def get_products():
+    # db = SessionLocal()
+    # db.query()
     return products_db
 
 
